@@ -87,7 +87,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-check_PROGRAMS = pgmdiff$(EXEEXT) checkbin$(EXEEXT)
+check_PROGRAMS = pgmdiff$(EXEEXT) checkbin$(EXEEXT) property-test$(EXEEXT)
 subdir = check
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
@@ -110,6 +110,8 @@ am__v_lt_0 = --silent
 am__v_lt_1 = 
 am_pgmdiff_OBJECTS = pgmdiff.$(OBJEXT)
 pgmdiff_OBJECTS = $(am_pgmdiff_OBJECTS)
+am_property_test_OBJECTS = property-test.$(OBJEXT)
+property_test_OBJECTS = $(am_property_test_OBJECTS)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -125,7 +127,8 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ./$(DEPDIR)/checkbin.Po ./$(DEPDIR)/pgmdiff.Po
+am__depfiles_remade = ./$(DEPDIR)/checkbin.Po ./$(DEPDIR)/pgmdiff.Po \
+	./$(DEPDIR)/property-test.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -145,8 +148,9 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(checkbin_SOURCES) $(pgmdiff_SOURCES)
-DIST_SOURCES = $(checkbin_SOURCES) $(pgmdiff_SOURCES)
+SOURCES = $(checkbin_SOURCES) $(pgmdiff_SOURCES) $(property_test_SOURCES)
+DIST_SOURCES = $(checkbin_SOURCES) $(pgmdiff_SOURCES) \
+	$(property_test_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -508,13 +512,17 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AM_CFLAGS = $(CADD)
 check_SCRIPTS = input-check.sh backend-check.sh potrace-check.sh postscript-check.sh pdf-check.sh mkbitmap-check.sh mkbitmap-input-check.sh binary-check.sh
-TESTS = $(check_SCRIPTS)
+TESTS = $(check_SCRIPTS) property-test
 INPUTS = data1.pbm data1.pgm data1.ppm data1.pbm.plain data1.pgm.plain data1.ppm.plain data1.bmp1 data1.bmp4 data1.bmp8 data1.bmp24 data1.bmp24td data1.bmp24v5 data1.bmp32 data1.bmp32bf data1.bmp4r data1.bmp8r data1-out.pgm data1.pbm.gs data1.pbm.rot data1.pgm.rot data1.pgm.inv data2.ppm data2.bmp32bf data2-out1.pbm data2-out2.pbm data3.pgm
-EXTRA_DIST = $(TESTS) missing.sh $(INPUTS:%=data/%)
+EXTRA_DIST = $(check_SCRIPTS) missing.sh $(INPUTS:%=data/%)
 pgmdiff_SOURCES = pgmdiff.c
 pgmdiff_LDADD = ../src/greymap.o -lm
 pgmdiff_DEPENDENCIES = ../src/greymap.o
 checkbin_SOURCES = checkbin.c
+
+property_test_SOURCES = property-test.c
+property_test_LDADD = ../src/libpotrace.la -lm
+property_test_DEPENDENCIES = ../src/libpotrace.la
 all: all-am
 
 .SUFFIXES:
@@ -566,6 +574,18 @@ pgmdiff$(EXEEXT): $(pgmdiff_OBJECTS) $(pgmdiff_DEPENDENCIES) $(EXTRA_pgmdiff_DEP
 	@rm -f pgmdiff$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(pgmdiff_OBJECTS) $(pgmdiff_LDADD) $(LIBS)
 
+property-test$(EXEEXT): $(property_test_OBJECTS) $(property_test_DEPENDENCIES) $(EXTRA_property_test_DEPENDENCIES)
+	@rm -f property-test$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(property_test_OBJECTS) $(property_test_LDADD) $(LIBS)
+
+property-test.log: property-test$(EXEEXT)
+	@p='property-test$(EXEEXT)'; \
+	b='property-test'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 
@@ -574,6 +594,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/checkbin.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pgmdiff.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/property-test.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -952,6 +973,7 @@ clean-am: clean-checkPROGRAMS clean-generic clean-libtool \
 distclean: distclean-am
 		-rm -f ./$(DEPDIR)/checkbin.Po
 	-rm -f ./$(DEPDIR)/pgmdiff.Po
+	-rm -f ./$(DEPDIR)/property-test.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -999,6 +1021,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-am
 		-rm -f ./$(DEPDIR)/checkbin.Po
 	-rm -f ./$(DEPDIR)/pgmdiff.Po
+	-rm -f ./$(DEPDIR)/property-test.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
