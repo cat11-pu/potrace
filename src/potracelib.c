@@ -100,6 +100,9 @@ potrace_state_t *potrace_trace(const potrace_param_t *param, const potrace_bitma
 
 /* free a Potrace state, without disturbing errno. */
 void potrace_state_free(potrace_state_t *st) {
+  if (!st) {
+    return;
+  }
   pathlist_free(st->plist);
   free(st);
 }

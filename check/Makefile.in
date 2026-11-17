@@ -87,7 +87,8 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-check_PROGRAMS = pgmdiff$(EXEEXT) checkbin$(EXEEXT)
+check_PROGRAMS = pgmdiff$(EXEEXT) checkbin$(EXEEXT) \
+	batch-check$(EXEEXT) batch-bench$(EXEEXT)
 subdir = check
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
@@ -101,6 +102,10 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
+am_batch_bench_OBJECTS = batch-bench.$(OBJEXT)
+batch_bench_OBJECTS = $(am_batch_bench_OBJECTS)
+am_batch_check_OBJECTS = batch-check.$(OBJEXT)
+batch_check_OBJECTS = $(am_batch_check_OBJECTS)
 am_checkbin_OBJECTS = checkbin.$(OBJEXT)
 checkbin_OBJECTS = $(am_checkbin_OBJECTS)
 checkbin_LDADD = $(LDADD)
@@ -125,7 +130,9 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ./$(DEPDIR)/checkbin.Po ./$(DEPDIR)/pgmdiff.Po
+am__depfiles_remade = ./$(DEPDIR)/batch-bench.Po \
+	./$(DEPDIR)/batch-check.Po ./$(DEPDIR)/checkbin.Po \
+	./$(DEPDIR)/pgmdiff.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -145,8 +152,10 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(checkbin_SOURCES) $(pgmdiff_SOURCES)
-DIST_SOURCES = $(checkbin_SOURCES) $(pgmdiff_SOURCES)
+SOURCES = $(batch_bench_SOURCES) $(batch_check_SOURCES) \
+	$(checkbin_SOURCES) $(pgmdiff_SOURCES)
+DIST_SOURCES = $(batch_bench_SOURCES) $(batch_check_SOURCES) \
+	$(checkbin_SOURCES) $(pgmdiff_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -447,6 +456,7 @@ PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 POTRACE = @POTRACE@
 POTRACELIB_VERSION = @POTRACELIB_VERSION@
+PTHREAD_LIBS = @PTHREAD_LIBS@
 RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
@@ -507,14 +517,21 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AM_CFLAGS = $(CADD)
+AM_CPPFLAGS = -I$(top_srcdir)/src
 check_SCRIPTS = input-check.sh backend-check.sh potrace-check.sh postscript-check.sh pdf-check.sh mkbitmap-check.sh mkbitmap-input-check.sh binary-check.sh
-TESTS = $(check_SCRIPTS)
+TESTS = $(check_SCRIPTS) batch-check$(EXEEXT)
 INPUTS = data1.pbm data1.pgm data1.ppm data1.pbm.plain data1.pgm.plain data1.ppm.plain data1.bmp1 data1.bmp4 data1.bmp8 data1.bmp24 data1.bmp24td data1.bmp24v5 data1.bmp32 data1.bmp32bf data1.bmp4r data1.bmp8r data1-out.pgm data1.pbm.gs data1.pbm.rot data1.pgm.rot data1.pgm.inv data2.ppm data2.bmp32bf data2-out1.pbm data2-out2.pbm data3.pgm
-EXTRA_DIST = $(TESTS) missing.sh $(INPUTS:%=data/%)
+EXTRA_DIST = $(check_SCRIPTS) missing.sh $(INPUTS:%=data/%)
 pgmdiff_SOURCES = pgmdiff.c
 pgmdiff_LDADD = ../src/greymap.o -lm
 pgmdiff_DEPENDENCIES = ../src/greymap.o
 checkbin_SOURCES = checkbin.c
+batch_check_SOURCES = batch-check.c
+batch_check_LDADD = ../src/libpotrace.la -lm $(PTHREAD_LIBS)
+batch_check_DEPENDENCIES = ../src/libpotrace.la
+batch_bench_SOURCES = batch-bench.c
+batch_bench_LDADD = ../src/libpotrace.la -lm $(PTHREAD_LIBS)
+batch_bench_DEPENDENCIES = ../src/libpotrace.la
 all: all-am
 
 .SUFFIXES:
@@ -558,6 +575,14 @@ clean-checkPROGRAMS:
 	echo " rm -f" $$list; \
 	rm -f $$list
 
+batch-bench$(EXEEXT): $(batch_bench_OBJECTS) $(batch_bench_DEPENDENCIES) $(EXTRA_batch_bench_DEPENDENCIES)
+	@rm -f batch-bench$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(batch_bench_OBJECTS) $(batch_bench_LDADD) $(LIBS)
+
+batch-check$(EXEEXT): $(batch_check_OBJECTS) $(batch_check_DEPENDENCIES) $(EXTRA_batch_check_DEPENDENCIES)
+	@rm -f batch-check$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(batch_check_OBJECTS) $(batch_check_LDADD) $(LIBS)
+
 checkbin$(EXEEXT): $(checkbin_OBJECTS) $(checkbin_DEPENDENCIES) $(EXTRA_checkbin_DEPENDENCIES) 
 	@rm -f checkbin$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(checkbin_OBJECTS) $(checkbin_LDADD) $(LIBS)
@@ -572,6 +597,8 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/batch-bench.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/batch-check.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/checkbin.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pgmdiff.Po@am__quote@ # am--include-marker
 
@@ -857,6 +884,13 @@ binary-check.sh.log: binary-check.sh
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
+batch-check.log: batch-check$(EXEEXT)
+	@p='batch-check$(EXEEXT)'; \
+	b='batch-check'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 .test.log:
 	@p='$<'; \
 	$(am__set_b); \
@@ -950,6 +984,8 @@ clean-am: clean-checkPROGRAMS clean-generic clean-libtool \
 	mostlyclean-am
 
 distclean: distclean-am
+	-rm -f ./$(DEPDIR)/batch-bench.Po
+	-rm -f ./$(DEPDIR)/batch-check.Po
 		-rm -f ./$(DEPDIR)/checkbin.Po
 	-rm -f ./$(DEPDIR)/pgmdiff.Po
 	-rm -f Makefile
@@ -997,6 +1033,8 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
+	-rm -f ./$(DEPDIR)/batch-bench.Po
+	-rm -f ./$(DEPDIR)/batch-check.Po
 		-rm -f ./$(DEPDIR)/checkbin.Po
 	-rm -f ./$(DEPDIR)/pgmdiff.Po
 	-rm -f Makefile

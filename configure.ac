@@ -193,6 +193,29 @@ fi
 AC_CHECK_LIB(m, floor, true, AC_MSG_ERROR([cannot find the m library (-lm)]))
 
 dnl ----------------------------------------------------------------------
+dnl Check whether batch tracing can use POSIX threads.
+
+AC_ARG_ENABLE(threads,
+ AS_HELP_STRING([--disable-threads],[build batch tracing without POSIX threads]))
+
+AC_MSG_CHECKING([whether to use POSIX threads for batch tracing])
+if test "$enable_threads" != no; then
+  AC_CHECK_HEADER(pthread.h, [have_pthread_h=yes], [have_pthread_h=no])
+  if test "$have_pthread_h" = yes; then
+    AC_CHECK_LIB(pthread, pthread_create, [PTHREAD_LIBS="-lpthread"], [have_pthread_h=no])
+  fi
+  if test "$have_pthread_h" = yes; then
+    AC_DEFINE(HAVE_PTHREAD,, Have POSIX threads for batch tracing?)
+    AC_MSG_RESULT(yes)
+  else
+    AC_MSG_RESULT(no)
+  fi
+else
+  AC_MSG_RESULT(no)
+fi
+AC_SUBST(PTHREAD_LIBS)
+
+dnl ----------------------------------------------------------------------
 dnl Check for types
 
 AC_TYPE_UINT64_T
@@ -272,6 +295,7 @@ AC_SUBST(MKBITMAP)
 AC_SUBST(EXTRA_OBJS)
 AC_SUBST(EXTRA_INCLUDES)
 AC_SUBST(EXTRA_LIBS)
+AC_SUBST(PTHREAD_LIBS)
 AC_SUBST(AM_CPPFLAGS)
 AC_SUBST(POTRACELIB_VERSION)
 

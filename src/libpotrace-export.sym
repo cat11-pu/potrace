@@ -1,5 +1,9 @@
 potrace_state_free
 potrace_param_default
 potrace_trace
+potrace_batch_param_default
+potrace_batch_param_free
+potrace_batch_trace
+potrace_batch_result_free
 potrace_param_free
 potrace_version

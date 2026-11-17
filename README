@@ -138,6 +138,10 @@ POTRACE LIBRARY (FOR DEVELOPERS)
  doc/potracelib.pdf. It is not by default installed, but can be
  installed with the --with-libpotrace configuration option.
 
+ The library also provides a bounded-memory, multi-threaded batch API.
+ See doc/potracelib-batch.md for its interface, failure handling, and
+ consistency guarantees.
+
 DOCUMENTATION
 
  Usage information is contained in the man page:

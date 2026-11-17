@@ -639,6 +639,7 @@ LIBOBJS
 POTRACELIB_VERSION
 AM_CPPFLAGS
 EXTRA_LIBS
+PTHREAD_LIBS
 EXTRA_INCLUDES
 EXTRA_OBJS
 MKBITMAP
@@ -780,6 +781,7 @@ enable_zlib
 enable_metric
 enable_a4
 enable_dumb_tty
+enable_threads
 with_included_getopt
 '
       ac_precious_vars='build_alias
@@ -1436,6 +1438,7 @@ Optional Features:
   --enable-metric         use metric units (centimeters) as default
   --enable-a4             use a4 as the default papersize
   --enable-dumb-tty       use simplified ASCII-only progress bar
+  --disable-threads       build batch tracing without POSIX threads
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -12585,6 +12588,80 @@ else
 fi
 
 
+# Check whether --enable-threads was given.
+if test "${enable_threads+set}" = set; then :
+  enableval=$enable_threads;
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to use POSIX threads for batch tracing" >&5
+$as_echo_n "checking whether to use POSIX threads for batch tracing... " >&6; }
+if test "$enable_threads" != no; then
+  ac_fn_c_check_header_compile "$LINENO" "pthread.h" "ac_cv_header_pthread_h" "$ac_includes_default"
+if test "x$ac_cv_header_pthread_h" = xyes; then :
+  have_pthread_h=yes
+else
+  have_pthread_h=no
+fi
+
+  if test "$have_pthread_h" = yes; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for pthread_create in -lpthread" >&5
+$as_echo_n "checking for pthread_create in -lpthread... " >&6; }
+if ${ac_cv_lib_pthread_pthread_create+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lpthread  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char pthread_create ();
+int
+main ()
+{
+return pthread_create ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_pthread_pthread_create=yes
+else
+  ac_cv_lib_pthread_pthread_create=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_pthread_pthread_create" >&5
+$as_echo "$ac_cv_lib_pthread_pthread_create" >&6; }
+if test "x$ac_cv_lib_pthread_pthread_create" = xyes; then :
+  PTHREAD_LIBS="-lpthread"
+else
+  have_pthread_h=no
+fi
+
+  fi
+  if test "$have_pthread_h" = yes; then
+    $as_echo "#define HAVE_PTHREAD 1" >>confdefs.h
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+  else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+  fi
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
 
 ac_fn_c_find_uintX_t "$LINENO" "64" "ac_cv_c_uint64_t"
 case $ac_cv_c_uint64_t in #(
@@ -15083,4 +15160,3 @@ if test -n "$ac_unrecognized_opts" && test "$enable_option_checking" != no; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: unrecognized options: $ac_unrecognized_opts" >&5
 $as_echo "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
-

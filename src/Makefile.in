@@ -138,7 +138,7 @@ am__uninstall_files_from_dir = { \
   }
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libpotrace_la_DEPENDENCIES =
-am__objects_1 = curve.lo trace.lo decompose.lo potracelib.lo
+am__objects_1 = curve.lo trace.lo decompose.lo potracelib.lo batch.lo
 am_libpotrace_la_OBJECTS = $(am__objects_1)
 libpotrace_la_OBJECTS = $(am_libpotrace_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -179,7 +179,8 @@ am__depfiles_remade = ./$(DEPDIR)/backend_dxf.Po \
 	./$(DEPDIR)/backend_eps.Po ./$(DEPDIR)/backend_geojson.Po \
 	./$(DEPDIR)/backend_pdf.Po ./$(DEPDIR)/backend_pgm.Po \
 	./$(DEPDIR)/backend_svg.Po ./$(DEPDIR)/backend_xfig.Po \
-	./$(DEPDIR)/bbox.Po ./$(DEPDIR)/bitmap_io.Po \
+	./$(DEPDIR)/batch.Plo ./$(DEPDIR)/bbox.Po \
+	./$(DEPDIR)/bitmap_io.Po \
 	./$(DEPDIR)/curve.Plo ./$(DEPDIR)/decompose.Plo \
 	./$(DEPDIR)/flate.Po ./$(DEPDIR)/getopt.Po \
 	./$(DEPDIR)/getopt1.Po ./$(DEPDIR)/greymap.Po \
@@ -273,6 +274,7 @@ EXTRA_LIBS = @EXTRA_LIBS@
 EXTRA_OBJS = @EXTRA_OBJS@
 FGREP = @FGREP@
 GREP = @GREP@
+PTHREAD_LIBS = @PTHREAD_LIBS@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -394,8 +396,8 @@ potracelib_demo_DEPENDENCIES = libpotrace.la
 #----------------------------------------------------------------------
 # Potrace library:
 libsources = curve.c curve.h trace.c trace.h decompose.c		\
- decompose.h potracelib.c potracelib.h lists.h auxiliary.h bitmap.h	\
- progress.h
+ decompose.h potracelib.c potracelib.h batch.c lists.h auxiliary.h	\
+ bitmap.h progress.h
 
 lib_LTLIBRARIES = $(INSTLIBS)
 EXTRA_LTLIBRARIES = libpotrace.la
@@ -403,7 +405,7 @@ libpotrace_la_SOURCES = $(libsources)
 libpotrace_la_LDFLAGS = -version-info 0:6:0 -rpath '$(libdir)' \
  -export-symbols $(srcdir)/libpotrace-export.sym -no-undefined
 
-libpotrace_la_LIBADD = -lm
+libpotrace_la_LIBADD = -lm $(PTHREAD_LIBS)
 MOSTLYCLEANFILES = libpotrace.la
 
 # header files to install
@@ -559,6 +561,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/backend_pgm.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/backend_svg.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/backend_xfig.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/batch.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bbox.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bitmap_io.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/curve.Plo@am__quote@ # am--include-marker
@@ -769,6 +772,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/backend_pgm.Po
 	-rm -f ./$(DEPDIR)/backend_svg.Po
 	-rm -f ./$(DEPDIR)/backend_xfig.Po
+	-rm -f ./$(DEPDIR)/batch.Plo
 	-rm -f ./$(DEPDIR)/bbox.Po
 	-rm -f ./$(DEPDIR)/bitmap_io.Po
 	-rm -f ./$(DEPDIR)/curve.Plo
@@ -838,6 +842,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/backend_pgm.Po
 	-rm -f ./$(DEPDIR)/backend_svg.Po
 	-rm -f ./$(DEPDIR)/backend_xfig.Po
+	-rm -f ./$(DEPDIR)/batch.Plo
 	-rm -f ./$(DEPDIR)/bbox.Po
 	-rm -f ./$(DEPDIR)/bitmap_io.Po
 	-rm -f ./$(DEPDIR)/curve.Plo

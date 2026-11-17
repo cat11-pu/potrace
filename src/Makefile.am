@@ -40,15 +40,15 @@ AM_CPPFLAGS = @EXTRA_INCLUDES@
 # Potrace library:
 
 libsources = curve.c curve.h trace.c trace.h decompose.c		\
- decompose.h potracelib.c potracelib.h lists.h auxiliary.h bitmap.h	\
- progress.h
+ decompose.h potracelib.c potracelib.h batch.c lists.h auxiliary.h	\
+ bitmap.h progress.h
 
 lib_LTLIBRARIES = $(INSTLIBS)
 EXTRA_LTLIBRARIES = libpotrace.la
 libpotrace_la_SOURCES = $(libsources)
 libpotrace_la_LDFLAGS = -version-info 0:6:0 -rpath '$(libdir)' \
  -export-symbols $(srcdir)/libpotrace-export.sym -no-undefined
-libpotrace_la_LIBADD = -lm
+libpotrace_la_LIBADD = -lm $(PTHREAD_LIBS)
 MOSTLYCLEANFILES = libpotrace.la
 
 # header files to install

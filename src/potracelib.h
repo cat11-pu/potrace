@@ -5,6 +5,8 @@
 #ifndef POTRACELIB_H
 #define POTRACELIB_H
 
+#include <stddef.h>
+
 /* this file defines the API for the core Potrace library. For a more
    detailed description of the API, see potracelib.pdf */
 
@@ -113,6 +115,45 @@ struct potrace_state_s {
 typedef struct potrace_state_s potrace_state_t;
 
 /* ---------------------------------------------------------------------- */
+/* batch tracing */
+
+/* per-item status. POTRACE_STATUS_OK and POTRACE_STATUS_INCOMPLETE are
+   also used for successfully traced items. */
+#define POTRACE_BATCH_STATUS_INVALID    (-1)
+#define POTRACE_BATCH_STATUS_FAILED     (-2)
+#define POTRACE_BATCH_STATUS_NO_MEMORY  (-3)
+
+/* defaults used by potrace_batch_param_default(). A threads value of 0
+   means "choose automatically, up to 8". A chunk_size value of 0 means
+   "choose automatically". */
+#define POTRACE_BATCH_DEFAULT_THREADS 8
+#define POTRACE_BATCH_DEFAULT_CHUNK_SIZE 0
+#define POTRACE_BATCH_DEFAULT_MEMORY_LIMIT ((size_t)512 * 1024 * 1024)
+
+struct potrace_batch_param_s {
+  int threads;         /* worker count, or 0 for automatic */
+  size_t memory_limit; /* batch-owned bytes, or 0 for the default */
+  size_t chunk_size;   /* images per work chunk, or 0 for automatic */
+};
+typedef struct potrace_batch_param_s potrace_batch_param_t;
+
+struct potrace_batch_item_s {
+  int status;                /* POTRACE_STATUS_* or POTRACE_BATCH_STATUS_* */
+  int errnum;                /* error number for failed items, else 0 */
+  potrace_state_t *state;    /* result, or NULL if the item failed */
+};
+typedef struct potrace_batch_item_s potrace_batch_item_t;
+
+struct potrace_batch_result_s {
+  size_t count;              /* number of items, equal to the input count */
+  potrace_batch_item_t *items; /* indexed exactly like the input array */
+  size_t total_pixels;       /* sum of w*h over valid input bitmaps */
+  size_t preallocated_bytes; /* input arena + batch bookkeeping */
+  int threads_used;          /* actual number of workers */
+};
+typedef struct potrace_batch_result_s potrace_batch_result_t;
+
+/* ---------------------------------------------------------------------- */
 /* API functions */
 
 /* get default parameters */
@@ -124,6 +165,29 @@ void potrace_param_free(potrace_param_t *p);
 /* trace a bitmap */
 potrace_state_t *potrace_trace(const potrace_param_t *param, 
 			       const potrace_bitmap_t *bm);
+
+/* get default batch parameters */
+potrace_batch_param_t *potrace_batch_param_default(void);
+
+/* free a batch parameter set */
+void potrace_batch_param_free(potrace_batch_param_t *p);
+
+/* Trace a batch of bitmaps. Bitmaps are validated and copied into one
+   arena sized from the sum of their pixel counts, then traced by a
+   pool of worker threads in chunks. The result contains one item per
+   input, in the same order, regardless of individual failures. The
+   input bitmaps remain owned by the caller. Returns NULL with errno
+   set only for invalid arguments or failure to allocate the result
+   itself; per-item failures are reported in the item status. The
+   progress callback in param is not invoked for batch calls. */
+potrace_batch_result_t *potrace_batch_trace(
+  const potrace_param_t *param,
+  const potrace_bitmap_t *const *bitmaps,
+  size_t count,
+  const potrace_batch_param_t *batch_param);
+
+/* free a batch result and all states it contains */
+void potrace_batch_result_free(potrace_batch_result_t *result);
 
 /* free a Potrace state */
 void potrace_state_free(potrace_state_t *st);

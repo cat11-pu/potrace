@@ -7,7 +7,7 @@ EPSFILES = potracelib-fig1a.eps potracelib-fig1b.eps			\
  potracelib-fig7-10.eps potracelib-fig7-12.eps potracelib-fig7-13.eps	\
  potracelib-fig8.eps
 
-EXTRA_DIST = potracelib.tex ${EPSFILES} dictionary.txt
+EXTRA_DIST = potracelib.tex potracelib-batch.md ${EPSFILES} dictionary.txt
 dist_doc_DATA = placement.pdf
 
 potracelib.dvi: potracelib.tex ${EPSFILES}
